@@ -1,0 +1,42 @@
+{
+  "name": "hyper-touchbar-switcher",
+  "version": "0.1.0",
+  "description": "Touchbar Tab switcher for Hyper",
+  "author": "Jon Clerck <j.m.clerck@icloud.com> (https://jclerck.io)",
+  "homepage": "https://github.com/Jmclerck/hyper-touchbar-switcher#readme",
+  "license": "MIT",
+  "main": "index.js",
+  "bugs": {
+    "url": "https://github.com/Jmclerck/hyper-touchbar-switcher/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jmclerck/hyper-touchbar-switcher.git"
+  },
+  "keywords": [
+    "Hyper",
+    "Touchbar",
+    "macOS",
+    "Macbook"
+  ],
+  "dependencies": {
+    "color": "^3.1.2",
+    "glob": "^7.1.4",
+    "untildify": "^4.0.0"
+  },
+  "devDependencies": {
+    "prettier": "^1.18.2",
+    "xo": "^0.24.0"
+  },
+  "prettier": {
+    "bracketSpacing": true,
+    "printWidth": 120,
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "all",
+    "useTabs": false
+  },
+  "xo": {
+    "prettier": true
+  }
+}
