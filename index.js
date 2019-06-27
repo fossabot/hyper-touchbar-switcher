@@ -150,7 +150,10 @@ exports.middleware = _ => next => action => {
   switch (type) {
     case 'CONFIG_LOAD':
     case 'CONFIG_RELOAD':
-      expander(config.touchbarSwitches)
+      if (config.touchbarSwitches) {
+        expander(config.touchbarSwitches)
+      }
+
       break
     default:
       break
