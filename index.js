@@ -50,7 +50,7 @@ const highlighter = (colour, isActive) => {
 const decoder = (key, config) =>
   new Promise(resolve => {
     if (glob.hasMagic(key)) {
-      glob(`${key}/`, { ignore }, (_, matches) => {
+      glob(untildify(`${key}/`), { ignore }, (_, matches) => {
         const part = matches.map(match => [match.slice(0, -1), config])
 
         resolve(new Map(part))
