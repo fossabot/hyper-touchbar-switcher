@@ -60,7 +60,7 @@ const decoder = (key, config) => {
         resolve(new Map(matches.map(match => [match.slice(0, -1), config]))),
       )
     } else {
-      resolve(new Map([[key, config]]))
+      resolve(new Map([[untildify(key.slice(0, -1)), config]]))
     }
   })
 }
