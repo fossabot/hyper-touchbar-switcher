@@ -1,0 +1,10 @@
+before_deploy:
+  npm run lint
+deploy:
+  provider: npm
+  email: j.m.clerck@icloud.com
+  api_key:
+    secure: 2KWfoH7/NwvSu1ODH2kPA+10QSGDWRrBs6PvT/SuFuVQp/BPHPXVNof+cSdxrjs1oJDsC1BPxBRsSTJxSV+DoOE6sEuxrYUmHC8sTrEn8wJ/HqbzKF8k3Yr5YgvCOIok2ge5zbGvFs0HiC4zyqoAPYM4fDWx/6BEr6JCIfilhjoEelS4BT7thgzLJbzAGM/8vBVdmGE6Sqog6SeIxH9GdLtSs+IZ6eZDsmEpBVLWI3igRNsbcNxXIzuzqXxlpZT/SHmbNHs+mEMGLLlqPxv5yzm+sY579tLA/6bDNo2knJj2HiQiElSGjco/+mkuugixRRiyjGToxGObAGbCU6hB4j6FHFf1X/2zqr1spFyLsTsDkSuqG/ifihmBJUttUtzrLqji5fQFuJYFQrzS3IQaDIU5VCRUVIAX0dXaQLvWT7cTq5QN//M6P+wU+yqNlKa1lcT/TaYEndMK4ZzpKmG96zJZFk36cAKgq1ksmttLyBUo+oMrzceuFGEFREHxjYkudsnKhPXUWCC2FsOaf3nIx3bN+nou8Vgh6OfM66+TjhmL7YBfJQEnijyw2ERUkc8ThWOrXU4iw843zwF8wxFVB3eiBj0Y0q0OMwCZX/FI4yZW8T7TOH6I2kKwe2TMMfO/AnYv3zZ5IcWuxhgbFyTrNqVSSooXKGP8EWn/0bmxOOw=
+  on:
+    tags: true
+    repo: Jmclerck/hyper-touchbar-switcher
