@@ -1,6 +1,10 @@
 language: node_js
 node_js: lts/*
+
+before_install: npm install -g npm@latest
+
 before_deploy: npm run lint
+
 deploy:
   provider: npm
   email: j.m.clerck@icloud.com
