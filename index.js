@@ -1,12 +1,10 @@
-/* global store */
+/* global performance store */
 
 const path = require('path')
 const { exec } = require('child_process')
-const color = require('./node_modules/color')
-const glob = require('./node_modules/glob')
-const untildify = require('./node_modules/untildify')
-
-const ignore = ['**/.git', '**/.svn', '**/.hg', '**/node_modules/**', '**/bower_components/**']
+const color = require('color')
+const glob = require('glob')
+const untildify = require('untildify')
 
 let configuration = {
   fallback: path.join(__dirname, 'images/Hyper@2x.png'),
@@ -14,11 +12,19 @@ let configuration = {
   tabs: new Map(),
 }
 
-const activate = uid =>
+const opts = {
+  ignore: ['**/.git', '**/.svn', '**/.hg', '**/node_modules/**', '**/bower_components/**'],
+  silent: true,
+  strict: false,
+}
+
+const activate = uid => {
   store.dispatch({
     type: 'SESSION_SET_ACTIVE',
     uid,
   })
+}
+
 const build = config => {
   const { colour, dir, fallback, icon, iconPosition, isActive, label, session: uid, title } = {
     ...config,
@@ -47,35 +53,47 @@ const highlighter = (colour, isActive) => {
   return cor.isLight() ? cor.darken(ratio).hex() : cor.lighten(ratio).hex()
 }
 
-const decoder = (key, config) =>
-  new Promise(resolve => {
+const decoder = (key, config) => {
+  return new Promise(resolve => {
     if (glob.hasMagic(key)) {
-      glob(untildify(`${key}/`), { ignore }, (_, matches) => {
-        const part = matches.map(match => [match.slice(0, -1), config])
-
-        resolve(new Map(part))
-      })
+      glob(untildify(`${key}/`), opts, (_, matches) =>
+        resolve(new Map(matches.map(match => [match.slice(0, -1), config]))),
+      )
     } else {
-      resolve(new Map([key, config]))
+      resolve(new Map([[key, config]]))
     }
   })
-const directory = pid =>
-  new Promise(resolve =>
+}
+
+const directory = pid => {
+  return new Promise(resolve =>
     exec(`lsof -p ${pid} | awk '$4=="cwd"' | tr -s ' ' | cut -d ' ' -f9-`, (_, stdout) => resolve(stdout.trim())),
   )
+}
+
 const expander = async config => {
-  const { tabs } = config
+  const start = performance.now()
 
-  for (const key in tabs) {
-    if (Object.prototype.hasOwnProperty.call(tabs, key)) {
-      const part = await decoder(key, tabs[key]) // eslint-disable-line no-await-in-loop
+  const results = await Promise.all(Object.entries(config.tabs).map(([key, config]) => decoder(key, config)))
 
-      configuration = {
-        ...configuration,
-        tabs: new Map([...configuration.tabs, ...part]),
-      }
-    }
+  configuration = {
+    ...configuration,
+    tabs: flatten(results),
   }
+
+  const end = performance.now()
+
+  console.log(`${configuration.tabs.size} paths found in ${(end - start) * 0.001}`)
+}
+
+const flatten = results => {
+  let tabs = new Map()
+
+  results.forEach(result => {
+    tabs = new Map([...tabs, ...result])
+  })
+
+  return tabs
 }
 
 const populate = tabs => {
