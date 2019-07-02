@@ -2,7 +2,14 @@
 
 const path = require('path')
 const { exec } = require('child_process')
+const fs = require('fs')
+const { tmpdir } = require('os')
+const { sep } = require('path')
+const { promisify } = require('util')
+
+const { crc32 } = require('crc')
 const color = require('color')
+const fromEntries = require('object.fromentries')
 const glob = require('glob')
 const untildify = require('untildify')
 
@@ -12,10 +19,42 @@ let configuration = {
   tabs: new Map(),
 }
 
+const root = `${tmpdir()}${sep}hyper-touchbar-switcher`
+const stat = promisify(fs.stat)
+const mkdir = promisify(fs.mkdir)
+const readFile = promisify(fs.readFile)
+const writeFile = promisify(fs.writeFile)
+
 const opts = {
   ignore: ['**/.git', '**/.svn', '**/.hg', '**/node_modules/**', '**/bower_components/**'],
   silent: true,
   strict: false,
+}
+
+const init = async () => {
+  try {
+    await stat(root)
+  } catch (error) {
+    await mkdir(root)
+  }
+}
+
+const digest = config => {
+  const sort = config =>
+    fromEntries(
+      Object.entries(config)
+        .map(([k, v]) => (typeof v === 'object' ? [k, sort(v)] : [k, v]))
+        .sort(),
+    )
+
+  const flatten = config =>
+    JSON.stringify(sort(config))
+      .replace(/\s/g, '')
+      .split('')
+      .map(char => String.prototype.codePointAt.apply(char))
+      .join()
+
+  return crc32(flatten(sort(config))).toString(4)
 }
 
 const activate = uid => {
@@ -74,16 +113,62 @@ const directory = pid => {
 const expander = async config => {
   const start = performance.now()
 
-  const results = await Promise.all(Object.entries(config.tabs).map(([key, config]) => decoder(key, config)))
+  let cacheFound = false
+  const cacheFile = digest(config.tabs)
+  const cachePath = `${root}${sep}${cacheFile}`
 
-  configuration = {
-    ...configuration,
-    tabs: flatten(results),
+  const clear = () => {
+    delete configuration.tabs
+    configuration.tabs = new Map()
   }
 
-  const end = performance.now()
+  const cacheHit = async () => {
+    clear()
 
-  console.log(`${configuration.tabs.size} paths found in ${(end - start) * 0.001}`)
+    const results = await readFile(cachePath)
+
+    const tabs = new Map(JSON.parse(results))
+
+    configuration = {
+      ...configuration,
+      tabs,
+    }
+
+    const end = performance.now()
+
+    console.log(`${configuration.tabs.size} paths loaded from cache in ${(end - start) * 0.001}`)
+  }
+
+  const cacheMiss = async () => {
+    clear()
+
+    const results = await Promise.all(Object.entries(config.tabs).map(([key, config]) => decoder(key, config)))
+
+    const tabs = flatten(results)
+
+    configuration = {
+      ...configuration,
+      tabs,
+    }
+
+    await writeFile(cachePath, JSON.stringify(Array.from(tabs.entries()))) // eslint-disable-line unicorn/prefer-spread
+
+    const end = performance.now()
+
+    console.log(`${configuration.tabs.size} paths found in ${(end - start) * 0.001}`)
+  }
+
+  try {
+    cacheFound = await stat(cachePath)
+  } catch {
+    cacheFound = false
+  }
+
+  if (cacheFound) {
+    await cacheHit()
+  } else {
+    await cacheMiss()
+  }
 }
 
 const flatten = results => {
@@ -179,3 +264,5 @@ exports.middleware = _ => next => action => {
 
   next(action)
 }
+
+init()
