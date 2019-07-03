@@ -1,6 +1,8 @@
 language: node_js
 node_js: node
-before_deploy: npm run lint
+
+script: npm run lint
+
 deploy:
   provider: npm
   email: j.m.clerck@icloud.com
